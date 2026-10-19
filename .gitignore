@@ -1,0 +1,23 @@
+# Secretos
+.env
+.env.*
+!.env.example
+serviceAccountKey*.json
+*-firebase-adminsdk-*.json
+google-services.json
+.firebaserc
+# Dependencias y compilados
+node_modules/
+dist/
+build/
+coverage/
+*.log
+# Android
+.gradle/
+local.properties
+*.apk
+# Editores y sistema
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
