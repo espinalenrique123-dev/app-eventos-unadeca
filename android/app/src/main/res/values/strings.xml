@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Eventos UNADECA</string>
+    <string name="titulo_eventos">Eventos disponibles</string>
+    <string name="sin_sesion">Inicie sesión con su cuenta institucional para ver los eventos.</string>
+    <string name="cargando">Cargando eventos…</string>
+    <string name="sin_eventos">No hay eventos disponibles.</string>
+    <string name="error_red">No se pudieron cargar los eventos. Revise su conexión.</string>
+    <string name="canal_eventos">Avisos de eventos</string>
+</resources>

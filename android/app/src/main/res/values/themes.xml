@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primario">#1565C0</color>
+    <color name="primario_oscuro">#0D3B84</color>
+
+    <style name="Theme.AppEventos" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primario</item>
+        <item name="android:statusBarColor">@color/primario_oscuro</item>
+    </style>
+</resources>

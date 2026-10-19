@@ -1,301 +1,132 @@
-# 📱 App Móvil de Eventos UNADECA
+# App Móvil de Eventos y Actividades — UNADECA
 
-[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
-[![Estado: En Desarrollo](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow.svg)](#)
-[![Android](https://img.shields.io/badge/Android-12+-green?logo=android)](https://developer.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple?logo=kotlin)](https://kotlinlang.org)
+Sistema para centralizar los eventos universitarios de UNADECA: los **estudiantes** consultan eventos, se inscriben y reciben notificaciones en la app Android; los **coordinadores** crean eventos, ven inscritos y registran asistencia desde la webapp; el **administrador** gestiona usuarios y reportes globales.
 
-Aplicación móvil nativa para gestionar, descubrir y participar en eventos y actividades de la Universidad Adventista de Centro América (UNADECA). Desarrollada con Kotlin en Android y backend RESTful en Node.js.
+**Curso:** IS-593 Metodología y Diseño de Sistemas II · **Estudiante:** Moisés Moncada · **Período:** 6 de septiembre – 29 de noviembre de 2026
 
-## 📋 Tabla de Contenidos
-
-- [Características](#características)
-- [Tech Stack](#tech-stack)
-- [Requisitos](#requisitos)
-- [Instalación](#instalación)
-- [Uso](#uso)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [API Backend](#api-backend)
-- [Contribuciones](#contribuciones)
-- [Licencia](#licencia)
-- [Contacto](#contacto)
+[![CI](https://github.com/espinalenrique123-dev/app-eventos-unadeca/actions/workflows/ci.yml/badge.svg)](https://github.com/espinalenrique123-dev/app-eventos-unadeca/actions/workflows/ci.yml)
 
 ---
 
-## ✨ Características
+## Arquitectura
 
-### 📅 Gestión de Eventos
-- Ver listado de eventos próximos y pasados
-- Filtrar eventos por categoría, fecha y ubicación
-- Buscar eventos específicos por nombre o descripción
-- Detalles completos de cada evento (descripción, horario, ubicación, asistentes)
+Arquitectura en 3 capas (DEDS): **presentación** (webapp React y app Android), **lógica de negocio** (API REST en Node.js + Express) y **datos** (Firebase: Firestore, Auth y Cloud Messaging).
 
-### 👤 Gestión de Usuarios
-- Registro e inicio de sesión seguro
-- Perfil de usuario personalizable
-- Historial de eventos asistidos
-- Lista de eventos guardados (favoritos)
+| Patrón | Dónde |
+|---|---|
+| **Singleton** | `backend/src/config/FirebaseConfig.js` — una sola inicialización de Firebase Admin |
+| **Facade** | `backend/src/facade/FirebaseFacade.js` — los repositorios no usan el SDK de Firebase directamente |
+| **Repository** | `backend/src/repositories/` — acceso a cada colección de Firestore |
+| **Observer** | `functions/src/observer/` — `EventSubject` notifica a `PushNotificationObserver` cuando cambia un evento |
 
-### 📍 Funcionalidades Avanzadas
-- Notificaciones en tiempo real de nuevos eventos
-- Confirmación de asistencia a eventos
-- Mapa de ubicación de eventos
-- Compartir eventos en redes sociales
+Flujo de una petición: `routes` → `middleware` (verifica el token y el rol) → `controllers` → `services` (reglas de negocio) → `repositories` → `FirebaseFacade` → Firestore.
 
----
-
-## 🛠️ Tech Stack
-
-### Frontend Mobile
-- **Lenguaje:** Kotlin
-- **IDE:** Android Studio
-- **Mínimo API:** 21 (Android 5.0+)
-- **Arquitectura:** MVVM (Model-View-ViewModel)
-- **Dependencias:** 
-  - Retrofit (HTTP Client)
-  - Room Database (SQLite Local)
-  - LiveData & ViewModel
-  - Navigation Component
-
-### Backend API
-- **Runtime:** Node.js (v18+)
-- **Framework:** Express.js
-- **Base de Datos:** MongoDB / Firebase Firestore
-- **Autenticación:** JWT (JSON Web Tokens)
-- **Documentación:** Swagger/OpenAPI
-
-### DevOps & Tools
-- **Control de Versiones:** Git
-- **Hosting:** (Firebase Hosting / Heroku / AWS)
-- **CI/CD:** GitHub Actions (planeado)
-
----
-
-## 📦 Requisitos
-
-### Para Desarrollo
-
-**Frontend Android:**
-- Android Studio Giraffe o superior
-- JDK 11+
-- Android SDK 21 o superior
-- Gradle 7.4+
-
-**Backend Node.js:**
-- Node.js v18.0.0 o superior
-- npm 9.0.0 o superior
-- MongoDB Community o Atlas (si usas MongoDB)
-- Firebase Project (si usas Firestore)
-
----
-
-## 🚀 Instalación
-
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/espinalenrique123-dev/app-eventos-unadeca.git
-cd app-eventos-unadeca
-```
-
-### 2. Configurar Frontend (Android)
-
-```bash
-# Navegar a carpeta Android
-cd frontend/android
-
-# Abrir en Android Studio
-open -a "Android Studio" .
-
-# O compilar desde terminal
-./gradlew build
-
-# Instalar APK en emulador/dispositivo
-./gradlew installDebug
-```
-
-**Configurar Firebase:**
-1. Descargar `google-services.json` desde Firebase Console
-2. Copiar a `app/` en el proyecto Android
-3. Sincronizar Gradle
-
-### 3. Configurar Backend (Node.js)
-
-```bash
-# Navegar a carpeta backend
-cd backend
-
-# Instalar dependencias
-npm install
-
-# Crear archivo .env
-cp .env.example .env
-
-# Configurar variables de entorno:
-# MONGODB_URI=mongodb://localhost:27017/eventos_unadeca
-# JWT_SECRET=tu_clave_secreta_aqui
-# PORT=3000
-# NODE_ENV=development
-
-# Ejecutar servidor
-npm start
-
-# Para desarrollo con auto-reload
-npm run dev
-```
-
----
-
-## 📱 Uso
-
-### Ejecutar la Aplicación
-
-**Desde Android Studio:**
-1. Abrir el proyecto
-2. Seleccionar dispositivo o emulador
-3. Click en "Run" o presionar `Shift + F10`
-
-**Desde Terminal:**
-```bash
-./gradlew runDebug
-```
-
-### Endpoints API Base
-
-```
-http://localhost:3000/api
-```
-
-**Ejemplos de uso:**
-
-```bash
-# Obtener todos los eventos
-curl -X GET http://localhost:3000/api/eventos
-
-# Crear cuenta
-curl -X POST http://localhost:3000/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"123456"}'
-
-# Iniciar sesión
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"123456"}'
-```
-
----
-
-## 📁 Estructura del Proyecto
+## Estructura del repositorio
 
 ```
 app-eventos-unadeca/
-├── frontend/
-│   └── android/
-│       ├── app/
-│       │   ├── src/
-│       │   │   ├── main/
-│       │   │   │   ├── java/com/unadeca/eventos/
-│       │   │   │   │   ├── ui/              # Fragmentos y Activities
-│       │   │   │   │   ├── viewmodel/       # ViewModels
-│       │   │   │   │   ├── repository/      # Repositorios de datos
-│       │   │   │   │   ├── network/         # Cliente HTTP (Retrofit)
-│       │   │   │   │   ├── database/        # Room Database
-│       │   │   │   │   └── model/           # Modelos de datos
-│       │   │   │   └── res/                 # Recursos (layouts, strings, etc)
-│       │   │   └── test/
-│       │   └── build.gradle
-│       └── settings.gradle
-├── backend/
+├── backend/                  API REST (Node.js 20 + Express)
 │   ├── src/
-│   │   ├── routes/                 # Rutas API
-│   │   ├── controllers/            # Lógica de negocio
-│   │   ├── models/                 # Esquemas BD
-│   │   ├── middleware/             # Autenticación, validación
-│   │   ├── config/                 # Configuración
-│   │   └── app.js                  # Entrada principal
-│   ├── .env.example
-│   ├── package.json
-│   └── README.md
-├── docs/                           # Documentación
-├── LICENSE                         # MIT License
-└── README.md                       # Este archivo
+│   │   ├── config/           FirebaseConfig (Singleton)
+│   │   ├── facade/           FirebaseFacade (Facade)
+│   │   ├── repositories/     User, Event, Inscription, Attendance
+│   │   ├── services/         Reglas de negocio (cupos, estados, permisos)
+│   │   ├── controllers/      Traducción HTTP ↔ servicios
+│   │   ├── routes/           Definición de endpoints
+│   │   ├── middleware/       Autenticación, roles y manejo de errores
+│   │   ├── models/           Enumeraciones y validaciones
+│   │   ├── app.js            Aplicación Express
+│   │   └── server.js         Punto de entrada
+│   └── tests/                Pruebas unitarias e integración (Jest + Supertest)
+├── web/                      Webapp administrativa (React + Vite) — coordinador y administrador
+├── android/                  App móvil del estudiante (Kotlin)
+├── functions/                Cloud Functions — notificaciones push (Observer) y recordatorio de 24 h
+├── firebase/                 Reglas de seguridad e índices de Firestore
+├── firebase.json             Configuración de Firebase CLI (emuladores, hosting, functions)
+└── .github/workflows/        Integración continua (GitHub Actions)
 ```
 
----
+## Modelo de datos (Firestore)
 
-## 🔌 API Backend
+| Colección | Campos |
+|---|---|
+| `users` | id, nombre, email, rol (`estudiante` · `coordinador` · `administrador`), activo |
+| `events` | id, nombre, descripcion, fecha, hora, lugar, categoria, cupoMaximo, cuposOcupados, estado, coordinadorId |
+| `inscriptions` | id = `{eventId}_{userId}`, eventId, userId, estado, fcmToken, fecha |
+| `attendance` | eventId, userId, asistio, fechaRegistro |
 
-### Autenticación
-```
-POST   /api/auth/signup      - Registrar nuevo usuario
-POST   /api/auth/login       - Iniciar sesión
-POST   /api/auth/logout      - Cerrar sesión
-POST   /api/auth/refresh     - Refrescar token JWT
-```
+Enumeraciones: `EstadoEvento { PUBLICADO, CUPO_LLENO, CANCELADO, FINALIZADO }` y `EstadoInscripcion { ACTIVA, CANCELADA }`.
 
-### Eventos
-```
-GET    /api/eventos          - Listar todos los eventos
-GET    /api/eventos/:id      - Obtener detalles de un evento
-POST   /api/eventos          - Crear nuevo evento (admin)
-PUT    /api/eventos/:id      - Actualizar evento (admin)
-DELETE /api/eventos/:id      - Eliminar evento (admin)
-POST   /api/eventos/:id/join - Confirmar asistencia
-```
+## Puesta en marcha
 
-### Usuarios
-```
-GET    /api/usuarios/:id     - Obtener perfil de usuario
-PUT    /api/usuarios/:id     - Actualizar perfil
-GET    /api/usuarios/:id/eventos - Eventos del usuario
+Requisitos: Node.js 20, Android Studio (para `android/`) y un proyecto de Firebase.
+
+### 1. Backend
+
+```bash
+cd backend
+cp .env.example .env          # complete los valores
+# Descargue la clave de la cuenta de servicio desde Firebase Console y guárdela como
+# backend/serviceAccountKey.json (está en .gitignore; NO la suba a GitHub).
+npm install
+npm run dev                   # http://localhost:3000  ·  GET /health
+npm test                      # pruebas + cobertura
 ```
 
-Para documentación completa ver: `/backend/README.md` o Swagger en `http://localhost:3000/api-docs`
+### 2. Webapp
 
----
+```bash
+cd web
+cp .env.example .env.local    # configuración de la app web de Firebase
+npm install
+npm run dev                   # http://localhost:5173  (redirige /api al backend)
+```
 
-## 🤝 Contribuciones
+### 3. App Android
 
-Las contribuciones son bienvenidas. Para cambios importantes:
+Abra la carpeta `android/` en Android Studio. Descargue `google-services.json` desde Firebase Console y colóquelo en `android/app/` (está en `.gitignore`). En el emulador, la app se conecta al backend local en `http://10.0.2.2:3000/api/`.
 
-1. Fork el repositorio
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+### 4. Firebase (reglas, índices y functions)
 
-**Estándares de código:**
-- Kotlin: Seguir [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html)
-- JavaScript: ESLint + Prettier
+```bash
+npm install -g firebase-tools
+cp .firebaserc.example .firebaserc
+firebase deploy --only firestore:rules,firestore:indexes
+cd functions && npm install && npm test && firebase deploy --only functions
+```
 
----
+## API principal
 
-## 📄 Licencia
+Todas las rutas `/api` requieren `Authorization: Bearer <ID token de Firebase Auth>`.
 
-Este proyecto está bajo la licencia MIT. Ver archivo `LICENSE` para más detalles.
+| Método y ruta | Rol |
+|---|---|
+| `GET /api/events` · `GET /api/events/:id` | cualquiera autenticado |
+| `POST /api/events/:id/inscriptions` · `DELETE /api/events/:id/inscriptions/me` | estudiante |
+| `GET /api/events/manage` · `POST /api/events` · `PUT /api/events/:id` | coordinador, administrador |
+| `POST /api/events/:id/cancel` · `POST /api/events/:id/finish` | coordinador del evento, administrador |
+| `GET /api/events/:id/inscriptions` · `GET/POST /api/events/:id/attendance` · `GET /api/events/:id/report` | coordinador del evento, administrador |
+| `GET/PUT /api/users/me` · `GET /api/users/me/inscriptions` | cualquiera autenticado |
+| `GET /api/admin/users` · `PUT /api/admin/users/:id/role` · `PUT /api/admin/users/:id/active` · `GET /api/admin/reports` | administrador |
 
----
+## Seguridad
 
-## 📧 Contacto
+- La contraseña nunca pasa por el backend: el inicio de sesión lo hace **Firebase Auth** y el backend verifica el ID token (JWT firmado por Google) en cada petición.
+- Los roles se validan en el backend; un usuario no puede cambiar su propio rol.
+- Las inscripciones usan **transacciones** de Firestore para que nunca se supere el cupo.
+- Las reglas de Firestore bloquean toda escritura desde los clientes; solo el backend escribe.
+- Las credenciales (`.env`, `serviceAccountKey.json`, `google-services.json`) están en `.gitignore`, y el CI ejecuta **gitleaks** para detectar secretos.
 
-**Desarrollador:** Moises Espinal  
-**Email:** moises.espinal@unadeca.ac.cr  
-**LinkedIn:** [linkedin.com/in/moises-espinal](https://linkedin.com)  
-**GitHub:** [@espinalenrique123-dev](https://github.com/espinalenrique123-dev)
+## Cronograma
 
----
+| Sprint | Semanas | Objetivo |
+|---|---|---|
+| Fase 1 | 1–3 | Repositorio, entorno, ajustes al DEDS y plan de pruebas |
+| Sprint 1 | 4–6 | Núcleo funcional: autenticación, eventos e inscripciones |
+| Sprint 2 | 7–9 | Funcionalidad avanzada: notificaciones, asistencia y reportes |
+| Sprint 3 | 10–12 | Estabilización: pruebas de sistema y despliegue |
+| Cierre | 13 | Integración final y presentación (29 de noviembre) |
 
-## 🙌 Agradecimientos
+## Licencia
 
-- Universidad Adventista de Centro América (UNADECA)
-- Profesores: Edy Echenique, Dodanim Castillo
-- Comunidad de desarrollo Kotlin y Node.js
-
----
-
-**Última actualización:** Agosto 2026  
-**Estado:** En Desarrollo ⚙️
-
----
-
-*Este proyecto es parte del Trabajo de Grado de Licenciatura en Ingeniería de Sistemas.*
+MIT — ver [LICENSE](LICENSE).

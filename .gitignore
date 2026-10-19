@@ -1,23 +1,47 @@
-# Secretos
+# ============================================================
+#  SECRETOS — nunca se suben al repositorio
+# ============================================================
 .env
 .env.*
 !.env.example
 serviceAccountKey*.json
 *-firebase-adminsdk-*.json
 google-services.json
+GoogleService-Info.plist
 .firebaserc
-# Dependencias y compilados
+*.pem
+*.key
+*.keystore
+*.jks
+
+# ============================================================
+#  Dependencias y compilados
+# ============================================================
 node_modules/
 dist/
 build/
 coverage/
+.firebase/
 *.log
-# Android
+npm-debug.log*
+
+# Android / Gradle
 .gradle/
 local.properties
+android/app/release/
 *.apk
-# Editores y sistema
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# ============================================================
+#  Editores y sistema operativo
+# ============================================================
 .idea/
+*.iml
 .vscode/
+*.swp
 .DS_Store
 Thumbs.db
