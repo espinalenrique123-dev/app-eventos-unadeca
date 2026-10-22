@@ -12,14 +12,27 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.AppEventos">
 
+        <!-- Mockup 1 — Inicio de sesión (pantalla inicial) -->
         <activity
-            android:name=".ui.MainActivity"
-            android:exported="true">
+            android:name=".ui.LoginActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Mockup 2 — Lista de eventos -->
+        <activity
+            android:name=".ui.EventosActivity"
+            android:exported="false" />
+
+        <!-- Mockup 3 — Detalle del evento -->
+        <activity
+            android:name=".ui.DetalleEventoActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.EventosActivity" />
 
         <service
             android:name=".services.EventosMessagingService"

@@ -34,6 +34,8 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - name: Complejidad ciclomática ≤ 10 (métrica del Plan de Pruebas)
+        run: npm run lint
       - run: npm test
         env:
           NODE_ENV: test

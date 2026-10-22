@@ -1,6 +1,7 @@
 const { unauthorized, forbidden } = require('../utils/errors');
 
 /**
+ * RF-15 y RNF Seguridad.
  * Verifica el ID token de Firebase Auth (JWT firmado por Google) que envía el
  * cliente en "Authorization: Bearer <token>". La contraseña nunca pasa por el backend:
  * el inicio de sesión lo hace Firebase Auth en la webapp y en la app Android.
@@ -32,7 +33,7 @@ function authenticate({ verifyIdToken, userService }) {
   };
 }
 
-/** Permite el acceso solo a los roles indicados. */
+/** RNF Seguridad: control de acceso basado en roles. */
 function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.rol)) {

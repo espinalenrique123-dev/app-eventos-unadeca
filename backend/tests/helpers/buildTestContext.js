@@ -9,9 +9,16 @@ const InscriptionService = require('../../src/services/InscriptionService');
 const AttendanceService = require('../../src/services/AttendanceService');
 const { Rol } = require('../../src/models/enums');
 
-/** Arma servicios y repositorios reales sobre la fachada en memoria. */
-function buildTestContext() {
+/** Hora fija de las pruebas: así los resultados no dependen del día en que se ejecutan. */
+const AHORA = new Date('2026-10-21T12:00:00-06:00');
+
+/**
+ * Arma servicios y repositorios reales sobre la fachada en memoria.
+ * @param {{ahora?: Date}} [opciones]  permite simular otra hora actual (RF-08: "antes del inicio")
+ */
+function buildTestContext({ ahora = AHORA } = {}) {
   const facade = new FakeFacade();
+  const reloj = { ahora };
   const repos = {
     userRepo: new UserRepository(facade),
     eventRepo: new EventRepository(facade),
@@ -21,7 +28,7 @@ function buildTestContext() {
   const services = {
     userService: new UserService(repos),
     eventService: new EventService(repos),
-    inscriptionService: new InscriptionService(repos),
+    inscriptionService: new InscriptionService({ ...repos, reloj: () => reloj.ahora }),
     attendanceService: new AttendanceService(repos),
   };
 
@@ -47,7 +54,7 @@ function buildTestContext() {
     cupoMaximo: 2,
   };
 
-  return { facade, repos, services, usuarios, eventoBase };
+  return { facade, repos, services, usuarios, eventoBase, reloj };
 }
 
-module.exports = { buildTestContext };
+module.exports = { buildTestContext, AHORA };

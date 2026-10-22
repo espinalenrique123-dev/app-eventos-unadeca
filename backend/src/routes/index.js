@@ -17,17 +17,17 @@ function buildRouter(services, verifyIdToken) {
 
   router.use(authenticate({ verifyIdToken, userService: services.userService }));
 
-  // Perfil
+  // Perfil — RF-15, RF-17
   router.get('/users/me', h(us.perfil));
   router.put('/users/me', h(us.actualizarPerfil));
   router.get('/users/me/inscriptions', h(us.misInscripciones));
 
-  // Eventos (lectura para cualquier usuario autenticado)
+  // Eventos (lectura para cualquier usuario autenticado) — RF-04, RF-05
   router.get('/events', h(ev.listarVisibles));
   router.get('/events/manage', gestores, h(ev.listarGestionables));
   router.get('/events/:id', h(ev.obtener));
 
-  // Gestión de eventos (coordinador del evento o administrador)
+  // Gestión de eventos (coordinador del evento o administrador) — RF-01, RF-02, RF-03, RF-12, RF-13, RF-14
   router.post('/events', gestores, h(ev.crear));
   router.put('/events/:id', gestores, h(ev.actualizar));
   router.post('/events/:id/cancel', gestores, h(ev.cancelar));
@@ -37,11 +37,11 @@ function buildRouter(services, verifyIdToken) {
   router.get('/events/:id/attendance', gestores, h(ev.asistencia));
   router.post('/events/:id/attendance', gestores, h(ev.registrarAsistencia));
 
-  // Inscripción del estudiante
+  // Inscripción del estudiante — RF-06, RF-07, RF-08
   router.post('/events/:id/inscriptions', h(ev.inscribir));
   router.delete('/events/:id/inscriptions/me', h(ev.cancelarInscripcion));
 
-  // Administración
+  // Administración — RF-16, RF-14
   router.get('/admin/users', soloAdmin, h(us.listar));
   router.put('/admin/users/:id/role', soloAdmin, h(us.cambiarRol));
   router.put('/admin/users/:id/active', soloAdmin, h(us.cambiarActivo));

@@ -3,6 +3,11 @@ const { badRequest, forbidden, notFound } = require('../utils/errors');
 
 const ROLES_VALIDOS = Object.values(Rol);
 
+/**
+ * Usuarios y roles.
+ * Trazabilidad: RF-15 (acceso solo con cuenta activa), RF-16 (administración de cuentas),
+ * RNF Seguridad (control de acceso basado en roles).
+ */
 class UserService {
   /** @param {{userRepo: import('../repositories/UserRepository')}} deps */
   constructor({ userRepo }) {

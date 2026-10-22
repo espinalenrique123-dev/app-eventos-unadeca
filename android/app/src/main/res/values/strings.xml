@@ -1,10 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Eventos UNADECA</string>
+
+    <!-- Mockup 1 — Inicio de sesión (RF-15) -->
+    <string name="login_subtitulo">App de Eventos y Actividades</string>
+    <string name="login_bienvenido">Bienvenido</string>
+    <string name="login_instruccion">Ingrese con su cuenta institucional</string>
+    <string name="login_correo">Correo electrónico</string>
+    <string name="login_contrasena">Contraseña</string>
+    <string name="login_boton">Iniciar sesión</string>
+    <string name="login_olvido">¿Olvidó su contraseña?</string>
+    <string name="login_campos">Ingrese su correo y su contraseña.</string>
+    <string name="login_error">Correo o contraseña incorrectos, o la cuenta está desactivada.</string>
+    <string name="recuperar_falta_correo">Escriba su correo para enviarle el enlace de recuperación.</string>
+    <string name="recuperar_enviado">Si el correo está registrado, recibirá un enlace para restablecer su contraseña.</string>
+
+    <!-- Mockup 2 — Lista de eventos (RF-04) -->
     <string name="titulo_eventos">Eventos disponibles</string>
-    <string name="sin_sesion">Inicie sesión con su cuenta institucional para ver los eventos.</string>
-    <string name="cargando">Cargando eventos…</string>
-    <string name="sin_eventos">No hay eventos disponibles.</string>
-    <string name="error_red">No se pudieron cargar los eventos. Revise su conexión.</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
+    <string name="sin_eventos">No hay eventos disponibles por ahora.</string>
+    <string name="error_red">No se pudo conectar con el servidor. Revise su conexión.</string>
+    <string name="fecha_hora_lugar">%1$s · %2$s · %3$s</string>
+    <string name="cupos_libres">%1$d cupos libres</string>
+
+    <!-- Mockup 3 — Detalle del evento (RF-05 a RF-08) -->
+    <string name="titulo_detalle">Detalle del evento</string>
+    <string name="volver">Volver</string>
+    <string name="detalle_fecha">Fecha: %1$s · %2$s</string>
+    <string name="detalle_lugar">Lugar: %1$s</string>
+    <string name="detalle_cupos">Cupos: %1$d de %2$d ocupados</string>
+    <string name="inscribirme">Inscribirme</string>
+    <string name="cupo_lleno">Cupo lleno</string>
+    <string name="no_disponible">No disponible</string>
+    <string name="cancelar_inscripcion">Cancelar inscripción</string>
+    <string name="cancelar_titulo">¿Cancelar su inscripción?</string>
+    <string name="cancelar_mensaje">Su cupo quedará disponible para otro estudiante.</string>
+    <string name="inscripcion_confirmada">¡Inscripción confirmada! Su lugar está reservado.</string>
+    <string name="inscripcion_cancelada">Inscripción cancelada.</string>
+
     <string name="canal_eventos">Avisos de eventos</string>
 </resources>

@@ -2,6 +2,7 @@ const { EstadoEvento, EstadoInscripcion } = require('../models/enums');
 const { badRequest, conflict } = require('../utils/errors');
 const { eventoGestionable } = require('./permisos');
 
+/** Trazabilidad: RF-12 (registrar asistencia y consultarla). */
 class AttendanceService {
   constructor({ attendanceRepo, inscriptionRepo, eventRepo }) {
     this.attendanceRepo = attendanceRepo;

@@ -5,6 +5,11 @@ const { eventoGestionable } = require('./permisos');
 
 const CERRADOS = [EstadoEvento.CANCELADO, EstadoEvento.FINALIZADO];
 
+/**
+ * Gestión de eventos.
+ * Trazabilidad: RF-01 (crear), RF-02 (editar), RF-03 (eliminar/cancelar), RF-04 (lista por fecha),
+ * RF-05 (detalle), RF-14 (reporte de asistencia), RNF Seguridad (solo el coordinador del evento o el administrador).
+ */
 class EventService {
   constructor({ eventRepo, inscriptionRepo, attendanceRepo }) {
     this.eventRepo = eventRepo;
@@ -12,6 +17,7 @@ class EventService {
     this.attendanceRepo = attendanceRepo;
   }
 
+  /** RF-04: eventos disponibles para el estudiante, ordenados por fecha. */
   listarVisibles() {
     return this.eventRepo.findVisibles();
   }
@@ -23,12 +29,14 @@ class EventService {
       : this.eventRepo.findByCoordinador(usuario.id);
   }
 
+  /** RF-05: detalle completo de un evento. */
   async obtener(id) {
     const evento = await this.eventRepo.findById(id);
     if (!evento) throw notFound('Evento no encontrado');
     return evento;
   }
 
+  /** RF-01: crea un evento publicado, sin inscritos, asignado al coordinador. */
   async crear(usuario, input) {
     const datos = validarEvento(input);
     return this.eventRepo.create({
@@ -39,6 +47,7 @@ class EventService {
     });
   }
 
+  /** RF-02: edita un evento publicado y recalcula su estado según los cupos (RF-07). */
   async actualizar(usuario, id, input) {
     const evento = await eventoGestionable(this.eventRepo, usuario, id);
     if (CERRADOS.includes(evento.estado)) throw conflict('No se puede editar un evento cancelado o finalizado');
@@ -51,6 +60,10 @@ class EventService {
     return this.eventRepo.update(id, { ...cambios, estado: estadoSegunCupos(actualizado) });
   }
 
+  /**
+   * RF-03: "eliminar" se implementa como cancelación lógica (estado CANCELADO) para conservar
+   * el historial de inscripciones y poder avisar a los inscritos (Cloud Function alCambiarEvento).
+   */
   async cancelar(usuario, id) {
     const evento = await eventoGestionable(this.eventRepo, usuario, id);
     if (CERRADOS.includes(evento.estado)) throw conflict('El evento ya está cancelado o finalizado');
@@ -63,7 +76,7 @@ class EventService {
     return this.eventRepo.update(id, { estado: EstadoEvento.FINALIZADO });
   }
 
-  /** Reporte de un evento: inscritos, cancelaciones y asistencia. */
+  /** RF-14: reporte de un evento con inscritos, cancelaciones y asistencia. */
   async reporte(usuario, id) {
     const evento = await eventoGestionable(this.eventRepo, usuario, id);
     const [inscripciones, asistencias] = await Promise.all([
@@ -85,7 +98,7 @@ class EventService {
     };
   }
 
-  /** Reporte global para el administrador. */
+  /** RF-14 (extensión): reporte global para el administrador. */
   async reporteGlobal() {
     const eventos = await this.eventRepo.findAll();
     const porEstado = Object.fromEntries(Object.values(EstadoEvento).map((e) => [e, 0]));
