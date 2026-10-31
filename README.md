@@ -37,10 +37,10 @@ app-eventos-unadeca/
 │   │   ├── models/           Enumeraciones y validaciones
 │   │   ├── app.js            Aplicación Express
 │   │   └── server.js         Punto de entrada
-│   └── tests/                Pruebas unitarias e integración (Jest + Supertest)
+│   └── tests/                Pruebas unitarias, integración (Supertest) y con emuladores (tests/emulator)
 ├── web/                      Webapp administrativa (React + Vite) — coordinador y administrador
 ├── android/                  App móvil del estudiante (Kotlin)
-├── functions/                Cloud Functions — notificaciones push (Observer) y recordatorio de 24 h
+├── functions/                Cloud Functions — notificaciones push (Observer): cambios, confirmación y recordatorios de 24 h y 1 h
 ├── firebase/                 Reglas de seguridad e índices de Firestore
 ├── firebase.json             Configuración de Firebase CLI (emuladores, hosting, functions)
 └── .github/workflows/        Integración continua (GitHub Actions)
@@ -101,13 +101,32 @@ Todas las rutas `/api` requieren `Authorization: Bearer <ID token de Firebase Au
 
 | Método y ruta | Rol |
 |---|---|
-| `GET /api/events` · `GET /api/events/:id` | cualquiera autenticado |
+| `GET /api/events` (`?categoria=`) · `GET /api/events/categories` · `GET /api/events/:id` | cualquiera autenticado |
 | `POST /api/events/:id/inscriptions` · `DELETE /api/events/:id/inscriptions/me` | estudiante |
 | `GET /api/events/manage` · `POST /api/events` · `PUT /api/events/:id` | coordinador, administrador |
 | `POST /api/events/:id/cancel` · `POST /api/events/:id/finish` | coordinador del evento, administrador |
-| `GET /api/events/:id/inscriptions` · `GET/POST /api/events/:id/attendance` · `GET /api/events/:id/report` | coordinador del evento, administrador |
+| `GET /api/events/:id/inscriptions` · `GET/POST /api/events/:id/attendance` · `GET /api/events/:id/report` · `GET /api/events/:id/report.csv` | coordinador del evento, administrador |
 | `GET/PUT /api/users/me` · `GET /api/users/me/inscriptions` | cualquiera autenticado |
-| `GET /api/admin/users` · `PUT /api/admin/users/:id/role` · `PUT /api/admin/users/:id/active` · `GET /api/admin/reports` | administrador |
+| `GET /api/admin/users` · `POST /api/admin/users` · `PUT /api/admin/users/:id/role` · `PUT /api/admin/users/:id/active` · `GET /api/admin/reports` | administrador |
+
+## Pruebas
+
+| Conjunto | Herramienta | Casos | Comando |
+|---|---|---|---|
+| Unitarias del backend (CP-U) | Jest | 58 | `cd backend && npm test` |
+| Integración de la API (CP-I) | Jest + Supertest | 19 | incluido en `npm test` |
+| Cloud Functions (CP-F) | Jest | 18 | `cd functions && npm test` |
+| Integración con emuladores (CP-E) | Jest + Firebase Emulator Suite | 18 | ver abajo |
+| Lógica de Android (CP-A) | JUnit | 12 | `gradle testDebugUnitTest` |
+
+Las pruebas con emuladores usan Firestore y Auth reales en local, con un proyecto `demo-` que no toca datos reales ni necesita credenciales (requiere Java 21):
+
+```bash
+firebase emulators:exec --project demo-app-eventos --only firestore,auth \
+  "cd backend && npm run test:emulator && cd ../functions && npm run test:emulator"
+```
+
+El CI de GitHub Actions ejecuta todos los conjuntos en cada push, junto con la búsqueda de secretos (gitleaks) y la regla de complejidad ciclomática ≤ 10.
 
 ## Seguridad
 
