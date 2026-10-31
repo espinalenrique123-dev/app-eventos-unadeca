@@ -169,17 +169,7 @@ describe('API REST — integración (Supertest)', () => {
     expect(r.status).toBe(403);
   });
 
-  test('CP-I-18 [RF-14] GET /api/events/:id/report.csv descarga el reporte como archivo CSV', async () => {
-    const { app, ctx, as } = setup();
-    const { body: e } = await request(app).post('/api/events').set(as('coord1')).send(ctx.eventoBase);
-    const r = await request(app).get(`/api/events/${e.id}/report.csv`).set(as('coord1'));
-    expect(r.status).toBe(200);
-    expect(r.headers['content-type']).toContain('text/csv');
-    expect(r.headers['content-disposition']).toContain(`reporte-${e.id}.csv`);
-    expect(r.text).toContain('"Evento","Feria Tecnológica 2026"');
-  });
-
-  test('CP-I-19 [RF-06][RF-09] inscribirse, cancelar y volver a inscribirse deja una sola inscripción ACTIVA (dispara la confirmación una vez por activación)', async () => {
+  test('CP-I-18 [RF-06][RF-09] inscribirse, cancelar y volver a inscribirse deja una sola inscripción ACTIVA (dispara la confirmación una vez por activación)', async () => {
     const { app, ctx, as } = setup();
     const { body: e } = await request(app).post('/api/events').set(as('coord1')).send(ctx.eventoBase);
     await request(app).post(`/api/events/${e.id}/inscriptions`).set(as('est1')).send({ fcmToken: 'tok' });

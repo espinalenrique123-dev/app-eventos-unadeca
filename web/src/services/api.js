@@ -18,22 +18,6 @@ async function request(method, path, body) {
   return data;
 }
 
-/** RF-14: descarga el reporte CSV con el token del usuario y lo guarda como archivo. */
-async function descargar(path, nombreArchivo) {
-  const token = await auth.currentUser?.getIdToken();
-  const res = await fetch(`${BASE}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Error ${res.status}`);
-  }
-  const url = URL.createObjectURL(await res.blob());
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = nombreArchivo;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 export const api = {
   perfil: () => request('GET', '/users/me'),
   actualizarPerfil: (nombre) => request('PUT', '/users/me', { nombre }),
@@ -48,7 +32,6 @@ export const api = {
   asistencia: (id) => request('GET', `/events/${id}/attendance`),
   registrarAsistencia: (id, userId, asistio) => request('POST', `/events/${id}/attendance`, { userId, asistio }),
   reporte: (id) => request('GET', `/events/${id}/report`),
-  descargarReporteCsv: (id) => descargar(`/events/${id}/report.csv`, `reporte-${id}.csv`),
 
   usuarios: () => request('GET', '/admin/users'),
   crearCuenta: (datos) => request('POST', '/admin/users', datos),

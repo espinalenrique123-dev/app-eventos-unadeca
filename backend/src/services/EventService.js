@@ -9,16 +9,6 @@ const CERRADOS = [EstadoEvento.CANCELADO, EstadoEvento.FINALIZADO];
 const normalizar = (t) => String(t ?? '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 /**
- * Celda CSV segura: escapa comillas y neutraliza fórmulas (=, +, -, @) para que
- * un nombre de evento malicioso no se ejecute al abrir el archivo en Excel.
- */
-function celdaCsv(valor) {
-  let t = String(valor ?? '');
-  if (/^[=+\-@\t\r]/.test(t)) t = `'${t}`;
-  return `"${t.replace(/"/g, '""')}"`;
-}
-
-/**
  * Gestión de eventos.
  * Trazabilidad: RF-01 (crear), RF-02 (editar), RF-03 (eliminar/cancelar), RF-04 (lista por fecha),
  * RF-05 (detalle), RF-14 (reporte de asistencia), RNF Seguridad (solo el coordinador del evento o el administrador).
@@ -122,22 +112,6 @@ class EventService {
       ausentes: asistencias.length - presentes,
       porcentajeAsistencia: activas ? Math.round((presentes / activas) * 100) : 0,
     };
-  }
-
-  /** RF-14: el mismo reporte en CSV, para abrirlo en Excel desde el panel web. */
-  async reporteCsv(usuario, id) {
-    const r = await this.reporte(usuario, id);
-    const filas = [
-      ['Evento', r.nombre],
-      ['Estado', r.estado],
-      ['Cupo máximo', r.cupoMaximo],
-      ['Inscritos activos', r.inscritosActivos],
-      ['Inscripciones canceladas', r.inscripcionesCanceladas],
-      ['Presentes', r.presentes],
-      ['Ausentes', r.ausentes],
-      ['Porcentaje de asistencia', `${r.porcentajeAsistencia}%`],
-    ];
-    return filas.map((f) => f.map(celdaCsv).join(',')).join('\r\n');
   }
 
   /** RF-14 (extensión): reporte global para el administrador. */

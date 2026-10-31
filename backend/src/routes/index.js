@@ -34,7 +34,6 @@ function buildRouter(services, verifyIdToken) {
   router.post('/events/:id/cancel', gestores, h(ev.cancelar));
   router.post('/events/:id/finish', gestores, h(ev.finalizar));
   router.get('/events/:id/report', gestores, h(ev.reporte));
-  router.get('/events/:id/report.csv', gestores, h(ev.reporteCsv));
   router.get('/events/:id/inscriptions', gestores, h(ev.inscritos));
   router.get('/events/:id/attendance', gestores, h(ev.asistencia));
   router.post('/events/:id/attendance', gestores, h(ev.registrarAsistencia));

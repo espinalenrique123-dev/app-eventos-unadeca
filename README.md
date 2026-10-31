@@ -105,7 +105,7 @@ Todas las rutas `/api` requieren `Authorization: Bearer <ID token de Firebase Au
 | `POST /api/events/:id/inscriptions` · `DELETE /api/events/:id/inscriptions/me` | estudiante |
 | `GET /api/events/manage` · `POST /api/events` · `PUT /api/events/:id` | coordinador, administrador |
 | `POST /api/events/:id/cancel` · `POST /api/events/:id/finish` | coordinador del evento, administrador |
-| `GET /api/events/:id/inscriptions` · `GET/POST /api/events/:id/attendance` · `GET /api/events/:id/report` · `GET /api/events/:id/report.csv` | coordinador del evento, administrador |
+| `GET /api/events/:id/inscriptions` · `GET/POST /api/events/:id/attendance` · `GET /api/events/:id/report` | coordinador del evento, administrador |
 | `GET/PUT /api/users/me` · `GET /api/users/me/inscriptions` | cualquiera autenticado |
 | `GET /api/admin/users` · `POST /api/admin/users` · `PUT /api/admin/users/:id/role` · `PUT /api/admin/users/:id/active` · `GET /api/admin/reports` | administrador |
 
@@ -113,8 +113,8 @@ Todas las rutas `/api` requieren `Authorization: Bearer <ID token de Firebase Au
 
 | Conjunto | Herramienta | Casos | Comando |
 |---|---|---|---|
-| Unitarias del backend (CP-U) | Jest | 58 | `cd backend && npm test` |
-| Integración de la API (CP-I) | Jest + Supertest | 19 | incluido en `npm test` |
+| Unitarias del backend (CP-U) | Jest | 55 | `cd backend && npm test` |
+| Integración de la API (CP-I) | Jest + Supertest | 18 | incluido en `npm test` |
 | Cloud Functions (CP-F) | Jest | 18 | `cd functions && npm test` |
 | Integración con emuladores (CP-E) | Jest + Firebase Emulator Suite | 18 | ver abajo |
 | Lógica de Android (CP-A) | JUnit | 12 | `gradle testDebugUnitTest` |

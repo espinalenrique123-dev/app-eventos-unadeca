@@ -1,7 +1,7 @@
 const { buildTestContext } = require('../helpers/buildTestContext');
 const { Rol } = require('../../src/models/enums');
 
-/** Sprint 2 — RF-18 (filtro por categoría), RF-16 (crear cuentas) y RF-14 (reporte CSV). */
+/** Sprint 2 — RF-18 (filtro por categoría), RF-16 (crear cuentas) y RF-17 (Mis eventos). */
 
 async function conEventos(ctx) {
   const { eventService } = ctx.services;
@@ -82,32 +82,8 @@ describe('UserService — creación de cuentas (RF-16)', () => {
   });
 });
 
-describe('EventService — reporte CSV (RF-14)', () => {
-  test('CP-U-55 [RF-14] el CSV tiene los mismos datos que el reporte', async () => {
-    const ctx = buildTestContext();
-    const e = await ctx.services.eventService.crear(ctx.usuarios.coord, ctx.eventoBase);
-    await ctx.services.inscriptionService.inscribir(ctx.usuarios.est, e.id, 'tok');
-    const csv = await ctx.services.eventService.reporteCsv(ctx.usuarios.coord, e.id);
-    expect(csv).toContain('"Evento","Feria Tecnológica 2026"');
-    expect(csv).toContain('"Inscritos activos","1"');
-  });
-
-  test('CP-U-56 [RF-14][RNF-Seguridad] neutraliza fórmulas y escapa comillas (inyección CSV)', async () => {
-    const ctx = buildTestContext();
-    const e = await ctx.services.eventService.crear(ctx.usuarios.coord, { ...ctx.eventoBase, nombre: '=HYPERLINK("x")' });
-    const csv = await ctx.services.eventService.reporteCsv(ctx.usuarios.coord, e.id);
-    expect(csv).toContain(`"'=HYPERLINK(""x"")"`);
-  });
-
-  test('CP-U-57 [RF-14][RNF-Seguridad] otro coordinador no puede descargar el reporte', async () => {
-    const ctx = buildTestContext();
-    const e = await ctx.services.eventService.crear(ctx.usuarios.coord, ctx.eventoBase);
-    await expect(ctx.services.eventService.reporteCsv(ctx.usuarios.coord2, e.id)).rejects.toMatchObject({ status: 403 });
-  });
-});
-
 describe('InscriptionService — "Mis eventos" (RF-17)', () => {
-  test('CP-U-58 [RF-17][RNF-Seguridad] cada inscripción trae el resumen del evento y no expone el token FCM', async () => {
+  test('CP-U-55 [RF-17][RNF-Seguridad] cada inscripción trae el resumen del evento y no expone el token FCM', async () => {
     const ctx = buildTestContext();
     const e = await ctx.services.eventService.crear(ctx.usuarios.coord, ctx.eventoBase);
     await ctx.services.inscriptionService.inscribir(ctx.usuarios.est, e.id, 'token-secreto');

@@ -12,10 +12,6 @@ module.exports = ({ eventService, inscriptionService, attendanceService }) => ({
   cancelar: async (req, res) => res.json(await eventService.cancelar(req.user, req.params.id)),
   finalizar: async (req, res) => res.json(await eventService.finalizar(req.user, req.params.id)),
   reporte: async (req, res) => res.json(await eventService.reporte(req.user, req.params.id)),
-  reporteCsv: async (req, res) => {
-    const csv = await eventService.reporteCsv(req.user, req.params.id);
-    res.type('text/csv; charset=utf-8').attachment(`reporte-${req.params.id}.csv`).send(`\uFEFF${csv}`);
-  },
 
   inscribir: async (req, res) =>
     res.status(201).json(await inscriptionService.inscribir(req.user, req.params.id, req.body?.fcmToken)),
