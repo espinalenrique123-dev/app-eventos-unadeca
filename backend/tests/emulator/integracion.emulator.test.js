@@ -4,6 +4,7 @@
  * contra los emuladores oficiales de Firestore y Auth, con un proyecto "demo-" sin credenciales.
  * Se ejecutan con:  firebase emulators:exec --project demo-app-eventos --only firestore,auth "npm run test:emulator"
  */
+const { randomUUID } = require('crypto');
 const request = require('supertest');
 const FirebaseConfig = require('../../src/config/FirebaseConfig');
 const { buildContainer } = require('../../src/container');
@@ -39,7 +40,9 @@ async function limpiar() {
 }
 
 /** Crea una cuenta en el emulador de Auth y devuelve un ID token real. */
-async function cuenta(email, password = 'clave-de-prueba-123') {
+async function cuenta(email) {
+  // Contraseña aleatoria en cada ejecución: no queda ninguna credencial escrita en el código.
+  const password = randomUUID();
   const r = await fetch(`http://${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
