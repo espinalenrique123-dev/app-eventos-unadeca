@@ -8,9 +8,10 @@
     "node": "20"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns /node_modules/ /tests/emulator/",
     "serve": "firebase emulators:start --only functions,firestore",
-    "deploy": "firebase deploy --only functions"
+    "deploy": "firebase deploy --only functions",
+    "test:emulator": "jest tests/emulator --runInBand"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",

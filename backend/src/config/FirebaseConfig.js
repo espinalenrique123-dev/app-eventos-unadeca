@@ -17,12 +17,18 @@ class FirebaseConfig {
     if (FirebaseConfig.#instance) {
       throw new Error('Use FirebaseConfig.getInstance()');
     }
-    this.#app = admin.apps.length
-      ? admin.app()
-      : admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
-          projectId: process.env.FIREBASE_PROJECT_ID,
-        });
+    this.#app = admin.apps.length ? admin.app() : admin.initializeApp(FirebaseConfig.opciones());
+  }
+
+  /**
+   * Con el emulador (pruebas de integración) no se usan credenciales: solo un proyecto "demo-",
+   * que Firebase garantiza que nunca toca recursos reales.
+   */
+  static opciones(env = process.env) {
+    if (env.FIRESTORE_EMULATOR_HOST) {
+      return { projectId: env.FIREBASE_PROJECT_ID || 'demo-app-eventos' };
+    }
+    return { credential: admin.credential.applicationDefault(), projectId: env.FIREBASE_PROJECT_ID };
   }
 
   static getInstance() {

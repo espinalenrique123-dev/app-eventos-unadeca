@@ -45,3 +45,8 @@ captures/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Registros de los emuladores de Firebase
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
