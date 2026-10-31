@@ -25,8 +25,23 @@ function buildTestContext({ ahora = AHORA } = {}) {
     inscriptionRepo: new InscriptionRepository(facade),
     attendanceRepo: new AttendanceRepository(facade),
   };
+  // Auth simulado (RF-16): guarda las cuentas creadas y rechaza correos repetidos como Firebase.
+  const authGateway = {
+    cuentas: new Map(),
+    async createUser({ email, displayName }) {
+      if ([...this.cuentas.values()].some((c) => c.email === email)) {
+        throw Object.assign(new Error('existe'), { code: 'auth/email-already-exists' });
+      }
+      const uid = `auth${this.cuentas.size + 1}`;
+      this.cuentas.set(uid, { email, displayName });
+      return uid;
+    },
+    async passwordSetupLink(email) {
+      return `https://example.test/definir-contrasena?para=${encodeURIComponent(email)}`;
+    },
+  };
   const services = {
-    userService: new UserService(repos),
+    userService: new UserService({ ...repos, authGateway }),
     eventService: new EventService(repos),
     inscriptionService: new InscriptionService({ ...repos, reloj: () => reloj.ahora }),
     attendanceService: new AttendanceService(repos),
@@ -54,7 +69,7 @@ function buildTestContext({ ahora = AHORA } = {}) {
     cupoMaximo: 2,
   };
 
-  return { facade, repos, services, usuarios, eventoBase, reloj };
+  return { facade, repos, services, usuarios, eventoBase, reloj, authGateway };
 }
 
 module.exports = { buildTestContext, AHORA };

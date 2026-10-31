@@ -62,6 +62,17 @@ class FirebaseFacade {
   verifyIdToken(token) {
     return this.authClient.verifyIdToken(token, true);
   }
+
+  /** RF-16: crea la cuenta en Firebase Auth (sin contraseña) y devuelve su uid. */
+  async createUser({ email, displayName }) {
+    const u = await this.authClient.createUser({ email, displayName, emailVerified: false });
+    return u.uid;
+  }
+
+  /** RF-16: enlace para que el usuario nuevo defina su propia contraseña. */
+  passwordSetupLink(email) {
+    return this.authClient.generatePasswordResetLink(email);
+  }
 }
 
 module.exports = FirebaseFacade;

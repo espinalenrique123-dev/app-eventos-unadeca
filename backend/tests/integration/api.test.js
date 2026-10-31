@@ -142,4 +142,51 @@ describe('API REST — integración (Supertest)', () => {
     expect(r.body).toHaveLength(50);
     expect(Date.now() - t0).toBeLessThan(500);
   });
+
+  test('CP-I-15 [RF-18] GET /api/events?categoria= filtra y /api/events/categories lista las categorías', async () => {
+    const { app, ctx, as } = setup();
+    await request(app).post('/api/events').set(as('coord1')).send(ctx.eventoBase);
+    await request(app).post('/api/events').set(as('coord1')).send({ ...ctx.eventoBase, nombre: 'Concierto', categoria: 'Cultural' });
+    const r = await request(app).get('/api/events').query({ categoria: 'Cultural' }).set(as('est1'));
+    expect(r.status).toBe(200);
+    expect(r.body.map((e) => e.nombre)).toEqual(['Concierto']);
+    const c = await request(app).get('/api/events/categories').set(as('est1'));
+    expect(c.body).toEqual(['Académico', 'Cultural']);
+  });
+
+  test('CP-I-16 [RF-16] el administrador crea una cuenta y la persona nueva ya puede usar la API con su rol', async () => {
+    const { app, as } = setup();
+    const r = await request(app).post('/api/admin/users').set(as('admin1')).send({ nombre: 'María', email: 'maria@unadeca.net', rol: 'coordinador' });
+    expect(r.status).toBe(201);
+    expect(r.body.enlaceContrasena).toBeTruthy();
+    const perfil = await request(app).get('/api/users/me').set(as(r.body.usuario.id));
+    expect(perfil.body.rol).toBe('coordinador');
+  });
+
+  test('CP-I-17 [RF-16][RNF-Seguridad] un coordinador no puede crear cuentas (403)', async () => {
+    const { app, as } = setup();
+    const r = await request(app).post('/api/admin/users').set(as('coord1')).send({ nombre: 'X', email: 'x@unadeca.net', rol: 'administrador' });
+    expect(r.status).toBe(403);
+  });
+
+  test('CP-I-18 [RF-14] GET /api/events/:id/report.csv descarga el reporte como archivo CSV', async () => {
+    const { app, ctx, as } = setup();
+    const { body: e } = await request(app).post('/api/events').set(as('coord1')).send(ctx.eventoBase);
+    const r = await request(app).get(`/api/events/${e.id}/report.csv`).set(as('coord1'));
+    expect(r.status).toBe(200);
+    expect(r.headers['content-type']).toContain('text/csv');
+    expect(r.headers['content-disposition']).toContain(`reporte-${e.id}.csv`);
+    expect(r.text).toContain('"Evento","Feria Tecnológica 2026"');
+  });
+
+  test('CP-I-19 [RF-06][RF-09] inscribirse, cancelar y volver a inscribirse deja una sola inscripción ACTIVA (dispara la confirmación una vez por activación)', async () => {
+    const { app, ctx, as } = setup();
+    const { body: e } = await request(app).post('/api/events').set(as('coord1')).send(ctx.eventoBase);
+    await request(app).post(`/api/events/${e.id}/inscriptions`).set(as('est1')).send({ fcmToken: 'tok' });
+    await request(app).delete(`/api/events/${e.id}/inscriptions/me`).set(as('est1'));
+    const r = await request(app).post(`/api/events/${e.id}/inscriptions`).set(as('est1')).send({ fcmToken: 'tok' });
+    expect(r.status).toBe(201);
+    const inscritos = await request(app).get(`/api/events/${e.id}/inscriptions`).set(as('coord1'));
+    expect(inscritos.body.filter((i) => i.estado === 'ACTIVA')).toHaveLength(1);
+  });
 });

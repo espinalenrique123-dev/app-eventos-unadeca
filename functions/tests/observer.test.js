@@ -58,3 +58,48 @@ describe('PushNotificationObserver', () => {
     expect(r.enviados).toBe(2);
   });
 });
+
+const { construirConfirmacion, construirRecordatorio } = require('../src/notifications');
+
+describe('Sprint 2 — confirmación y recordatorio de 1 h (RF-09, RF-11)', () => {
+  const evento = { nombre: 'Feria Tecnológica', fecha: '2026-11-20', hora: '09:00', lugar: 'Auditorio' };
+  const activa = { eventId: 'e1', userId: 'u1', estado: 'ACTIVA', fcmToken: 'tok' };
+
+  test('CP-F-11 [RF-09] confirma una inscripción nueva', () => {
+    expect(construirConfirmacion(null, activa, evento)).toMatchObject({ tipo: 'INSCRIPCION_CONFIRMADA' });
+  });
+  test('CP-F-12 [RF-09] confirma cuando una inscripción cancelada se reactiva', () => {
+    expect(construirConfirmacion({ ...activa, estado: 'CANCELADA' }, activa, evento)).not.toBeNull();
+  });
+  test('CP-F-13 [RF-09] no repite la confirmación si la inscripción ya estaba activa ni avisa al cancelar', () => {
+    expect(construirConfirmacion(activa, { ...activa, fcmToken: 'tok2' }, evento)).toBeNull();
+    expect(construirConfirmacion(activa, { ...activa, estado: 'CANCELADA' }, evento)).toBeNull();
+  });
+  test('CP-F-14 [RF-09] sin token FCM no intenta enviar', () => {
+    expect(construirConfirmacion(null, { ...activa, fcmToken: null }, evento)).toBeNull();
+  });
+
+  const unaHoraAntes = new Date('2026-11-20T14:00:00Z'); // 08:00 en Costa Rica
+  test('CP-F-15 [RF-11] sí envía el recordatorio si falta 1 h', () => {
+    expect(debeEnviarRecordatorio({ ...base }, unaHoraAntes, '1h')).toBe(true);
+  });
+  test('CP-F-16 [RF-11] no lo envía dos veces ni si faltan 2 h', () => {
+    expect(debeEnviarRecordatorio({ ...base, recordatorio1hEnviado: true }, unaHoraAntes, '1h')).toBe(false);
+    expect(debeEnviarRecordatorio({ ...base }, new Date('2026-11-20T13:00:00Z'), '1h')).toBe(false);
+  });
+  test('CP-F-17 [RF-10][RF-11] los dos recordatorios son independientes', () => {
+    expect(debeEnviarRecordatorio({ ...base, recordatorioEnviado: true }, unaHoraAntes, '1h')).toBe(true);
+    expect(construirRecordatorio(base, '1h').tipo).toBe('RECORDATORIO_1H');
+    expect(() => debeEnviarRecordatorio(base, unaHoraAntes, '2h')).toThrow(RangeError);
+  });
+
+  test('CP-F-18 [RF-09] el observador envía solo al token indicado, sin consultar a todos los inscritos', async () => {
+    const db = { collection: jest.fn() };
+    const messaging = { sendEachForMulticast: jest.fn().mockResolvedValue({ successCount: 1, failureCount: 0 }) };
+    const obs = new PushNotificationObserver(db, messaging, { info: jest.fn(), warn: jest.fn() });
+    const r = await obs.update({ eventId: 'e1', notificacion: { tipo: 'X', titulo: 't', cuerpo: 'c' }, tokens: ['tok', 'tok'] });
+    expect(db.collection).not.toHaveBeenCalled();
+    expect(messaging.sendEachForMulticast).toHaveBeenCalledWith(expect.objectContaining({ tokens: ['tok'] }));
+    expect(r.enviados).toBe(1);
+  });
+});

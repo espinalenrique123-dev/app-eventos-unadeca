@@ -5,6 +5,19 @@ const { eventoGestionable } = require('./permisos');
 
 const CERRADOS = [EstadoEvento.CANCELADO, EstadoEvento.FINALIZADO];
 
+/** Compara categorías sin importar mayúsculas, tildes ni espacios sobrantes. */
+const normalizar = (t) => String(t ?? '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Celda CSV segura: escapa comillas y neutraliza fórmulas (=, +, -, @) para que
+ * un nombre de evento malicioso no se ejecute al abrir el archivo en Excel.
+ */
+function celdaCsv(valor) {
+  let t = String(valor ?? '');
+  if (/^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+  return `"${t.replace(/"/g, '""')}"`;
+}
+
 /**
  * Gestión de eventos.
  * Trazabilidad: RF-01 (crear), RF-02 (editar), RF-03 (eliminar/cancelar), RF-04 (lista por fecha),
@@ -17,9 +30,22 @@ class EventService {
     this.attendanceRepo = attendanceRepo;
   }
 
-  /** RF-04: eventos disponibles para el estudiante, ordenados por fecha. */
-  listarVisibles() {
-    return this.eventRepo.findVisibles();
+  /**
+   * RF-04 / RF-18: eventos disponibles para el estudiante, ordenados por fecha.
+   * Si llega una categoría, solo devuelve los de esa categoría (sin distinguir mayúsculas).
+   */
+  async listarVisibles({ categoria } = {}) {
+    const eventos = await this.eventRepo.findVisibles();
+    if (categoria === undefined || categoria === '') return eventos;
+    if (typeof categoria !== 'string' || categoria.length > 100) throw badRequest('"categoria" inválida');
+    const buscada = normalizar(categoria);
+    return eventos.filter((e) => normalizar(e.categoria) === buscada);
+  }
+
+  /** RF-18: categorías que tienen eventos visibles, para llenar el filtro de los clientes. */
+  async categorias() {
+    const eventos = await this.eventRepo.findVisibles();
+    return [...new Set(eventos.map((e) => e.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
   }
 
   /** Panel de eventos: el coordinador ve los suyos; el administrador ve todos. */
@@ -96,6 +122,22 @@ class EventService {
       ausentes: asistencias.length - presentes,
       porcentajeAsistencia: activas ? Math.round((presentes / activas) * 100) : 0,
     };
+  }
+
+  /** RF-14: el mismo reporte en CSV, para abrirlo en Excel desde el panel web. */
+  async reporteCsv(usuario, id) {
+    const r = await this.reporte(usuario, id);
+    const filas = [
+      ['Evento', r.nombre],
+      ['Estado', r.estado],
+      ['Cupo máximo', r.cupoMaximo],
+      ['Inscritos activos', r.inscritosActivos],
+      ['Inscripciones canceladas', r.inscripcionesCanceladas],
+      ['Presentes', r.presentes],
+      ['Ausentes', r.ausentes],
+      ['Porcentaje de asistencia', `${r.porcentajeAsistencia}%`],
+    ];
+    return filas.map((f) => f.map(celdaCsv).join(',')).join('\r\n');
   }
 
   /** RF-14 (extensión): reporte global para el administrador. */

@@ -38,17 +38,34 @@ function inicioEvento(evento) {
 }
 
 /**
- * ¿Corresponde enviar el recordatorio de 24 h? Ventana [23 h, 25 h) antes del inicio,
- * para que una ejecución cada hora no se salte ningún evento.
+ * Recordatorios. Cada uno tiene su ventana (en horas antes del inicio) y su bandera
+ * para no enviarse dos veces. La ventana es más ancha que la frecuencia de la tarea
+ * programada, así ninguna ejecución se salta un evento.
+ *  - 24h (RF-10): ventana [23 h, 25 h), la tarea corre cada 60 min.
+ *  - 1h  (RF-11): ventana [45 min, 75 min), la tarea corre cada 15 min.
  */
-function debeEnviarRecordatorio(evento, ahora = new Date()) {
-  if (evento.recordatorioEnviado) return false;
+const RECORDATORIOS = Object.freeze({
+  '24h': { desde: 23, hasta: 25, bandera: 'recordatorioEnviado' },
+  '1h': { desde: 0.75, hasta: 1.25, bandera: 'recordatorio1hEnviado' },
+});
+
+function debeEnviarRecordatorio(evento, ahora = new Date(), tipo = '24h') {
+  const r = RECORDATORIOS[tipo];
+  if (!r) throw new RangeError(`Tipo de recordatorio desconocido: ${tipo}`);
+  if (evento[r.bandera]) return false;
   if (!['PUBLICADO', 'CUPO_LLENO'].includes(evento.estado)) return false;
   const horas = (inicioEvento(evento) - ahora) / 36e5;
-  return horas >= 23 && horas < 25;
+  return horas >= r.desde && horas < r.hasta;
 }
 
-function construirRecordatorio(evento) {
+function construirRecordatorio(evento, tipo = '24h') {
+  if (tipo === '1h') {
+    return {
+      tipo: 'RECORDATORIO_1H',
+      titulo: 'Tu evento empieza en una hora',
+      cuerpo: `"${evento.nombre}" empieza a las ${evento.hora} en ${evento.lugar}.`,
+    };
+  }
   return {
     tipo: 'RECORDATORIO',
     titulo: 'Tu evento es mañana',
@@ -56,4 +73,26 @@ function construirRecordatorio(evento) {
   };
 }
 
-module.exports = { construirNotificacion, debeEnviarRecordatorio, construirRecordatorio, inicioEvento };
+/**
+ * RF-09: confirmación al estudiante cuando su inscripción queda ACTIVA,
+ * ya sea nueva o reactivada después de cancelarla. Devuelve null en otro caso.
+ */
+function construirConfirmacion(antes, despues, evento) {
+  if (!despues || despues.estado !== 'ACTIVA') return null;
+  if (antes && antes.estado === 'ACTIVA') return null;
+  if (!despues.fcmToken || !evento) return null;
+  return {
+    tipo: 'INSCRIPCION_CONFIRMADA',
+    titulo: 'Inscripción confirmada',
+    cuerpo: `Quedaste inscrito en "${evento.nombre}" el ${evento.fecha} a las ${evento.hora}, ${evento.lugar}.`,
+  };
+}
+
+module.exports = {
+  construirNotificacion,
+  debeEnviarRecordatorio,
+  construirRecordatorio,
+  construirConfirmacion,
+  inicioEvento,
+  RECORDATORIOS,
+};

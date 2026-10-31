@@ -21,7 +21,7 @@ function buildContainer() {
   };
 
   const services = {
-    userService: new UserService(repos),
+    userService: new UserService({ ...repos, authGateway: facade }),
     eventService: new EventService(repos),
     inscriptionService: new InscriptionService(repos),
     attendanceService: new AttendanceService(repos),

@@ -5,6 +5,7 @@ module.exports = ({ userService, inscriptionService, eventService }) => ({
 
   // Administrador
   listar: async (req, res) => res.json(await userService.listar()),
+  crearCuenta: async (req, res) => res.status(201).json(await userService.crearCuenta(req.body)),
   cambiarRol: async (req, res) => res.json(await userService.cambiarRol(req.user, req.params.id, req.body?.rol)),
   cambiarActivo: async (req, res) =>
     res.json(await userService.cambiarActivo(req.user, req.params.id, req.body?.activo)),

@@ -23,7 +23,8 @@ function buildRouter(services, verifyIdToken) {
   router.get('/users/me/inscriptions', h(us.misInscripciones));
 
   // Eventos (lectura para cualquier usuario autenticado) — RF-04, RF-05
-  router.get('/events', h(ev.listarVisibles));
+  router.get('/events', h(ev.listarVisibles)); // ?categoria=… — RF-18
+  router.get('/events/categories', h(ev.categorias)); // RF-18 (antes de /:id)
   router.get('/events/manage', gestores, h(ev.listarGestionables));
   router.get('/events/:id', h(ev.obtener));
 
@@ -33,6 +34,7 @@ function buildRouter(services, verifyIdToken) {
   router.post('/events/:id/cancel', gestores, h(ev.cancelar));
   router.post('/events/:id/finish', gestores, h(ev.finalizar));
   router.get('/events/:id/report', gestores, h(ev.reporte));
+  router.get('/events/:id/report.csv', gestores, h(ev.reporteCsv));
   router.get('/events/:id/inscriptions', gestores, h(ev.inscritos));
   router.get('/events/:id/attendance', gestores, h(ev.asistencia));
   router.post('/events/:id/attendance', gestores, h(ev.registrarAsistencia));
@@ -43,6 +45,7 @@ function buildRouter(services, verifyIdToken) {
 
   // Administración — RF-16, RF-14
   router.get('/admin/users', soloAdmin, h(us.listar));
+  router.post('/admin/users', soloAdmin, h(us.crearCuenta));
   router.put('/admin/users/:id/role', soloAdmin, h(us.cambiarRol));
   router.put('/admin/users/:id/active', soloAdmin, h(us.cambiarActivo));
   router.get('/admin/reports', soloAdmin, h(us.reporteGlobal));

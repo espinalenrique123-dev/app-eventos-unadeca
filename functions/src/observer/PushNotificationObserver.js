@@ -24,9 +24,13 @@ class PushNotificationObserver {
     return [...new Set(snap.docs.map((d) => d.get('fcmToken')).filter(Boolean))];
   }
 
-  /** @param {{eventId: string, notificacion: {tipo: string, titulo: string, cuerpo: string}}} cambio */
-  async update({ eventId, notificacion }) {
-    const tokens = await this.tokensDeInscritos(eventId);
+  /**
+   * @param {{eventId: string, notificacion: {tipo: string, titulo: string, cuerpo: string}, tokens?: string[]}} cambio
+   *   Si el cambio trae `tokens`, se envía solo a ellos (RF-09, aviso individual);
+   *   si no, a todos los inscritos activos del evento.
+   */
+  async update({ eventId, notificacion, tokens: destinatarios }) {
+    const tokens = destinatarios ? [...new Set(destinatarios.filter(Boolean))] : await this.tokensDeInscritos(eventId);
     if (!tokens.length) return { enviados: 0 };
 
     let enviados = 0;
