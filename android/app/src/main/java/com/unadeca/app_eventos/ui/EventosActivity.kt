@@ -15,16 +15,20 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.unadeca.app_eventos.R
 import com.unadeca.app_eventos.api.ApiErrores
 import com.unadeca.app_eventos.api.RetrofitClient
+import com.unadeca.app_eventos.logica.FiltroCategoria
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 /**
  * Mockup 2 — Lista de eventos (Estudiante).
  * RF-04: eventos disponibles ordenados por fecha (el backend los entrega ordenados).
+ * RF-18: filtro por categoría con chips; RF-17: acceso a "Mis eventos" desde el menú.
  */
 class EventosActivity : AppCompatActivity() {
 
@@ -33,6 +37,10 @@ class EventosActivity : AppCompatActivity() {
     }
     private lateinit var progreso: ProgressBar
     private lateinit var mensaje: TextView
+    private lateinit var grupoCategorias: ChipGroup
+    private var categoriaSeleccionada: String? = null
+    private var categoriasCargadas = false
+    private var construyendoChips = false
 
     // Android 13+: las notificaciones de los RF-09/10/11 requieren permiso del usuario.
     private val pedirPermiso = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -48,17 +56,29 @@ class EventosActivity : AppCompatActivity() {
         val barra = findViewById<MaterialToolbar>(R.id.barra)
         barra.inflateMenu(R.menu.menu_eventos)
         barra.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.accionSalir) {
-                FirebaseAuth.getInstance().signOut()
-                volverAlLogin()
-                true
-            } else {
-                false
+            when (item.itemId) {
+                R.id.accionMisEventos -> {
+                    startActivity(MisEventosActivity.intent(this))
+                    true
+                }
+                R.id.accionSalir -> {
+                    FirebaseAuth.getInstance().signOut()
+                    volverAlLogin()
+                    true
+                }
+                else -> false
             }
         }
 
         progreso = findViewById(R.id.progreso)
         mensaje = findViewById(R.id.textoMensaje)
+        grupoCategorias = findViewById(R.id.grupoCategorias)
+        grupoCategorias.setOnCheckedStateChangeListener { grupo, ids ->
+            if (construyendoChips) return@setOnCheckedStateChangeListener
+            val chip = ids.firstOrNull()?.let { grupo.findViewById<Chip>(it) }
+            categoriaSeleccionada = FiltroCategoria.paraApi(chip?.text?.toString())
+            cargar()
+        }
         findViewById<RecyclerView>(R.id.listaEventos).apply {
             layoutManager = LinearLayoutManager(this@EventosActivity)
             adapter = this@EventosActivity.adapter
@@ -82,9 +102,13 @@ class EventosActivity : AppCompatActivity() {
         mensaje.visibility = View.GONE
         lifecycleScope.launch {
             try {
-                val eventos = RetrofitClient.api.eventos()
+                if (!categoriasCargadas) cargarCategorias()
+                val eventos = RetrofitClient.api.eventos(categoriaSeleccionada)
                 adapter.mostrar(eventos)
-                if (eventos.isEmpty()) mostrarMensaje(getString(R.string.sin_eventos))
+                if (eventos.isEmpty()) {
+                    val vacio = if (categoriaSeleccionada == null) R.string.sin_eventos else R.string.sin_eventos_categoria
+                    mostrarMensaje(getString(vacio))
+                }
             } catch (e: HttpException) {
                 if (ApiErrores.esDeSesion(e)) {
                     FirebaseAuth.getInstance().signOut()
@@ -98,6 +122,24 @@ class EventosActivity : AppCompatActivity() {
                 progreso.visibility = View.GONE
             }
         }
+    }
+
+    /** RF-18: un chip por categoría, más "Todas" seleccionado al inicio. */
+    private suspend fun cargarCategorias() {
+        val categorias = RetrofitClient.api.categorias()
+        categoriasCargadas = true
+        construyendoChips = true
+        grupoCategorias.removeAllViews()
+        (listOf(getString(R.string.categoria_todas)) + categorias).forEachIndexed { i, nombre ->
+            val chip = Chip(this).apply {
+                id = View.generateViewId()
+                text = nombre
+                isCheckable = true
+                isChecked = i == 0
+            }
+            grupoCategorias.addView(chip)
+        }
+        construyendoChips = false
     }
 
     private fun mostrarMensaje(texto: String) {

@@ -105,3 +105,14 @@ describe('EventService — reporte CSV (RF-14)', () => {
     await expect(ctx.services.eventService.reporteCsv(ctx.usuarios.coord2, e.id)).rejects.toMatchObject({ status: 403 });
   });
 });
+
+describe('InscriptionService — "Mis eventos" (RF-17)', () => {
+  test('CP-U-58 [RF-17][RNF-Seguridad] cada inscripción trae el resumen del evento y no expone el token FCM', async () => {
+    const ctx = buildTestContext();
+    const e = await ctx.services.eventService.crear(ctx.usuarios.coord, ctx.eventoBase);
+    await ctx.services.inscriptionService.inscribir(ctx.usuarios.est, e.id, 'token-secreto');
+    const [i] = await ctx.services.inscriptionService.misInscripciones(ctx.usuarios.est);
+    expect(i.evento).toMatchObject({ nombre: 'Feria Tecnológica 2026', fecha: '2026-11-20', lugar: 'Auditorio principal' });
+    expect(i).not.toHaveProperty('fcmToken');
+  });
+});

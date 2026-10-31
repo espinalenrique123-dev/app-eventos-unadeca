@@ -34,6 +34,12 @@
             android:exported="false"
             android:parentActivityName=".ui.EventosActivity" />
 
+        <!-- RF-17 — Mis eventos -->
+        <activity
+            android:name=".ui.MisEventosActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.EventosActivity" />
+
         <service
             android:name=".services.EventosMessagingService"
             android:exported="false">

@@ -29,6 +29,17 @@ data class Inscripcion(
     val userId: String = "",
     val estado: EstadoInscripcion = EstadoInscripcion.ACTIVA,
     val fecha: String = "",
+    /** RF-17: resumen del evento que agrega el backend en GET /users/me/inscriptions. */
+    val evento: ResumenEvento? = null,
+)
+
+data class ResumenEvento(
+    val nombre: String = "",
+    val fecha: String = "",
+    val hora: String = "",
+    val lugar: String = "",
+    val categoria: String = "",
+    val estado: EstadoEvento = EstadoEvento.PUBLICADO,
 )
 
 /** Documento de la colección `users`. */

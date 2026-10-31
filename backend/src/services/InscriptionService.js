@@ -77,8 +77,21 @@ class InscriptionService {
   }
 
   /** RF-17: historial de inscripciones del estudiante. */
-  misInscripciones(usuario) {
-    return this.inscriptionRepo.findByUser(usuario.id);
+  async misInscripciones(usuario) {
+    const inscripciones = await this.inscriptionRepo.findByUser(usuario.id);
+    // RF-17: se agrega un resumen del evento para que "Mis eventos" no haga una llamada por cada uno.
+    const eventos = await Promise.all(inscripciones.map((i) => this.eventRepo.findById(i.eventId)));
+    return inscripciones.map(({ fcmToken, ...i }, k) => ({
+      ...i,
+      evento: eventos[k] && {
+        nombre: eventos[k].nombre,
+        fecha: eventos[k].fecha,
+        hora: eventos[k].hora,
+        lugar: eventos[k].lugar,
+        categoria: eventos[k].categoria,
+        estado: eventos[k].estado,
+      },
+    }));
   }
 
   /** RF-13: lista de inscritos activos de un evento (solo su coordinador o un administrador). */

@@ -38,5 +38,17 @@
     <string name="inscripcion_confirmada">¡Inscripción confirmada! Su lugar está reservado.</string>
     <string name="inscripcion_cancelada">Inscripción cancelada.</string>
 
+    <!-- Sprint 2 — RF-18 filtro por categoría -->
+    <string name="categoria_todas">Todas</string>
+    <string name="sin_eventos_categoria">No hay eventos de esta categoría por ahora.</string>
+
+    <!-- Sprint 2 — RF-17 Mis eventos -->
+    <string name="titulo_mis_eventos">Mis eventos</string>
+    <string name="mis_eventos_vacio">Todavía no se ha inscrito a ningún evento.</string>
+    <string name="mis_eventos_proximo">Próximo</string>
+    <string name="mis_eventos_realizado">Realizado</string>
+    <string name="mis_eventos_inscripcion_cancelada">Inscripción cancelada</string>
+    <string name="mis_eventos_evento_cancelado">Evento cancelado</string>
+
     <string name="canal_eventos">Avisos de eventos</string>
 </resources>

@@ -9,6 +9,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /** Endpoints del backend que usa el estudiante (ver backend/src/routes/index.js). */
 interface ApiService {
@@ -18,8 +19,13 @@ interface ApiService {
     @GET("users/me/inscriptions")
     suspend fun misInscripciones(): List<Inscripcion>
 
+    /** RF-04 / RF-18: con categoría = null devuelve todos los eventos visibles. */
     @GET("events")
-    suspend fun eventos(): List<Evento>
+    suspend fun eventos(@Query("categoria") categoria: String? = null): List<Evento>
+
+    /** RF-18: categorías disponibles para el filtro. */
+    @GET("events/categories")
+    suspend fun categorias(): List<String>
 
     @GET("events/{id}")
     suspend fun evento(@Path("id") id: String): Evento
