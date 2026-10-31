@@ -64,3 +64,9 @@ td small { color: var(--gris); }
 .centro { text-align: center; margin-top: 20vh; }
 
 @media print { .barra, button, a { display: none; } }
+
+/* Sprint 2 — RF-16 formulario de creación de cuentas */
+.tarjeta { background: #fff; padding: 20px 24px; border-radius: 12px; box-shadow: 0 2px 12px rgb(0 0 0 / 6%); margin-bottom: 24px; max-width: 520px; }
+.tarjeta h3 { margin-top: 0; }
+.aviso { margin-top: 16px; padding: 12px 16px; border-left: 4px solid var(--primario); background: #f4f7fb; border-radius: 8px; }
+.aviso input { width: 100%; margin: 8px 0; font-size: 12px; }

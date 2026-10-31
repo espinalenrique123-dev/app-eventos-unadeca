@@ -1,6 +1,7 @@
 import { api } from '../../services/api';
 import { useCarga } from '../../components/useCarga';
 import { useAuth } from '../../context/AuthContext.jsx';
+import CrearCuenta from './CrearCuenta.jsx';
 
 const ROLES = ['estudiante', 'coordinador', 'administrador'];
 
@@ -20,6 +21,7 @@ export default function GestionUsuarios() {
   return (
     <>
       <h2>Gestión de usuarios</h2>
+      <CrearCuenta alCrear={recargar} />
       {error && <p className="error">{error}</p>}
       {cargando ? <p>Cargando…</p> : (
         <table>
